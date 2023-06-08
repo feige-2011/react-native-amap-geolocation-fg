@@ -1,74 +1,44 @@
-import { NativeModules, NativeEventEmitter, Platform } from "react-native";
-import { Location, ReGeocode, AppKey, LocationMode, LocationPurpose, GeoLanguage } from "./types";
-
-const BDGeolocation = NativeModules.BDGeolocation;
-const eventEmitter = new NativeEventEmitter(BDGeolocation);
-
+import { Location, ReGeocode, AppKey, LocationMode, LocationPurpose, GeoLanguage } from "../../../../../../东航android/react-native-amap-geolocation-fg/lib/js/types";
 /**
  * 初始化 SDK
  *
  * @param key 高德开放平台应用 Key
  */
-export function init(key: AppKey): Promise<void> {
-  return BDGeolocation.init(Platform.select(key));
-}
-
+export declare function init(key: AppKey): Promise<void>;
 /**
  * 添加定位监听函数
  *
  * @param listener
  */
-export function addLocationListener(listener: (location: Location & ReGeocode) => void) {
-  return eventEmitter.addListener("AMapGeolocation", listener);
-}
-
+export declare function addLocationListener(listener: (location: Location & ReGeocode) => void): import("react-native").EmitterSubscription;
 /**
  * 开始持续定位
  */
-export function start() {
-  BDGeolocation.start();
-}
-
+export declare function start(): void;
 /**
  * 停止持续定位
  */
-export function stop() {
-  BDGeolocation.stop();
-}
-
+export declare function stop(): void;
 /**
  * 获取当前是否正在定位的状态
  *
  * @platform android
  */
-export function isStarted(): boolean {
-  return BDGeolocation.isStarted();
-}
-
+export declare function isStarted(): boolean;
 /**
  * 设置发起定位请求的时间间隔（毫秒），默认 2000，最小值为 1000
  *
  * @default 2000
  * @platform android
  */
-export function setInterval(interval: number) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setInterval(interval);
-  }
-}
-
+export declare function setInterval(interval: number): void;
 /**
  * 设置是否单次定位
  *
  * @default false
  * @platform android
  */
-export function setOnceLocation(isOnceLocation: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setOnceLocation(isOnceLocation);
-  }
-}
-
+export declare function setOnceLocation(isOnceLocation: boolean): void;
 /**
  * 设置是否允许调用 WiFi 刷新
  *
@@ -78,24 +48,14 @@ export function setOnceLocation(isOnceLocation: boolean) {
  * @default true
  * @platform android
  */
-export function setWifiScan(isWifiScan: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setWifiScan(isWifiScan);
-  }
-}
-
+export declare function setWifiScan(isWifiScan: boolean): void;
 /**
  * 设置是否使用设备传感器
  *
  * @default false
  * @platform android
  */
-export function setSensorEnable(enable: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setSensorEnable(enable);
-  }
-}
-
+export declare function setSensorEnable(enable: boolean): void;
 /**
  * 设置是否开启wifi始终扫描
  *
@@ -106,12 +66,7 @@ export function setSensorEnable(enable: boolean) {
  * @default true
  * @platform android
  */
-export function setOpenAlwaysScanWifi(isOpen: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setOpenAlwaysScanWifi(isOpen);
-  }
-}
-
+export declare function setOpenAlwaysScanWifi(isOpen: boolean): void;
 /**
  * 设置定位是否等待 WiFi 列表刷新
  *
@@ -121,12 +76,7 @@ export function setOpenAlwaysScanWifi(isOpen: boolean) {
  * @default false
  * @platform android
  */
-export function setOnceLocationLatest(isOnceLocationLatest: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setOnceLocationLatest(isOnceLocationLatest);
-  }
-}
-
+export declare function setOnceLocationLatest(isOnceLocationLatest: boolean): void;
 /**
  * 设置是否返回地址信息，默认返回地址信息
  *
@@ -135,48 +85,28 @@ export function setOnceLocationLatest(isOnceLocationLatest: boolean) {
  * @default true
  * @platform android
  */
-export function setNeedAddress(isNeedAddress: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setNeedAddress(isNeedAddress);
-  }
-}
-
+export declare function setNeedAddress(isNeedAddress: boolean): void;
 /**
  * 设置是否允许模拟位置
  *
  * @default true
  * @platform android
  */
-export function setMockEnable(enable: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setMockEnable(enable);
-  }
-}
-
+export declare function setMockEnable(enable: boolean): void;
 /**
  * 设置是否使用缓存策略
  *
  * @default true
  * @platform android
  */
-export function setLocationCacheEnable(enable: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setLocationCacheEnable(enable);
-  }
-}
-
+export declare function setLocationCacheEnable(enable: boolean): void;
 /**
  * 设置联网超时时间（毫秒）
  *
  * @default 30000
  * @platform android
  */
-export function setHttpTimeout(timeout: number) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setHttpTimeout(timeout);
-  }
-}
-
+export declare function setHttpTimeout(timeout: number): void;
 /**
  * 设置优先返回卫星定位信息时等待卫星定位结果的超时时间（毫秒）
  *
@@ -184,12 +114,7 @@ export function setHttpTimeout(timeout: number) {
  *
  * @platform android
  */
-export function setGpsFirstTimeout(timeout: number) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setGpsFirstTimeout(timeout);
-  }
-}
-
+export declare function setGpsFirstTimeout(timeout: number): void;
 /**
  * 设置首次定位是否等待卫星定位结果
  *
@@ -200,23 +125,13 @@ export function setGpsFirstTimeout(timeout: number) {
  * @default false
  * @platform android
  */
-export function setGpsFirst(isGpsFirst: boolean) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setGpsFirst(isGpsFirst);
-  }
-}
-
+export declare function setGpsFirst(isGpsFirst: boolean): void;
 /**
  * 设置定位模式
  *
  * @platform android
  */
-export function setLocationMode(mode: LocationMode) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setLocationMode(mode);
-  }
-}
-
+export declare function setLocationMode(mode: LocationMode): void;
 /**
  * 设置定位场景
  *
@@ -229,21 +144,13 @@ export function setLocationMode(mode: LocationMode) {
  *
  * @platform android
  */
-export function setLocationPurpose(purpose: LocationPurpose) {
-  if (Platform.OS === "android") {
-    BDGeolocation.setLocationPurpose(purpose);
-  }
-}
-
+export declare function setLocationPurpose(purpose: LocationPurpose): void;
 /**
  * 设置逆地理信息的语言，目前支持中文和英文
  *
  * @default GeoLanguage.DEFAULT
  */
-export function setGeoLanguage(language: GeoLanguage) {
-  BDGeolocation.setGeoLanguage(language);
-}
-
+export declare function setGeoLanguage(language: GeoLanguage): void;
 /**
  * 设定定位的最小更新距离（米）
  *
@@ -251,12 +158,7 @@ export function setGeoLanguage(language: GeoLanguage) {
  *
  * @platform ios
  */
-export function setDistanceFilter(distance: number) {
-  if (Platform.OS === "ios") {
-    BDGeolocation.setDistanceFilter(distance);
-  }
-}
-
+export declare function setDistanceFilter(distance: number): void;
 /**
  * 设定期望的定位精度（米）
  *
@@ -268,24 +170,14 @@ export function setDistanceFilter(distance: number) {
  *
  * @platform ios
  */
-export function setDesiredAccuracy(desiredAccuracy: number) {
-  if (Platform.OS === "ios") {
-    BDGeolocation.setDesiredAccuracy(desiredAccuracy);
-  }
-}
-
+export declare function setDesiredAccuracy(desiredAccuracy: number): void;
 /**
  * 指定定位是否会被系统自动暂停
  *
  * @default false
  * @platform ios
  */
-export function setPausesLocationUpdatesAutomatically(isPause: boolean) {
-  if (Platform.OS === "ios") {
-    BDGeolocation.setPausesLocationUpdatesAutomatically(isPause);
-  }
-}
-
+export declare function setPausesLocationUpdatesAutomatically(isPause: boolean): void;
 /**
  * 是否允许后台定位
  *
@@ -296,12 +188,7 @@ export function setPausesLocationUpdatesAutomatically(isPause: boolean) {
  * @default false
  * @platform ios
  */
-export function setAllowsBackgroundLocationUpdates(isAllow: boolean) {
-  if (Platform.OS === "ios") {
-    BDGeolocation.setAllowsBackgroundLocationUpdates(isAllow);
-  }
-}
-
+export declare function setAllowsBackgroundLocationUpdates(isAllow: boolean): void;
 /**
  * 指定单次定位超时时间（秒）
  *
@@ -312,12 +199,7 @@ export function setAllowsBackgroundLocationUpdates(isAllow: boolean) {
  * @default 10
  * @platform ios
  */
-export function setLocationTimeout(timeout: number) {
-  if (Platform.OS === "ios") {
-    BDGeolocation.setLocationTimeout(timeout);
-  }
-}
-
+export declare function setLocationTimeout(timeout: number): void;
 /**
  * 指定单次定位逆地理超时时间（秒）
  *
@@ -326,27 +208,16 @@ export function setLocationTimeout(timeout: number) {
  * @default 5
  * @platform ios
  */
-export function setReGeocodeTimeout(timeout: number) {
-  if (Platform.OS === "ios") {
-    BDGeolocation.setReGeocodeTimeout(timeout);
-  }
-}
-
+export declare function setReGeocodeTimeout(timeout: number): void;
 interface Options {
-  locatingWithReGeocode?: boolean;
+    locatingWithReGeocode?: boolean;
 }
-
-export const _options: Options = {};
-
+export declare const _options: Options;
 /**
  * 连续定位是否返回逆地理编码
  *
  * @default false
  * @platform ios
  */
-export function setLocatingWithReGeocode(withReGeocode: boolean) {
-  _options.locatingWithReGeocode = withReGeocode;
-  if (Platform.OS === "ios") {
-    BDGeolocation.setLocatingWithReGeocode(withReGeocode);
-  }
-}
+export declare function setLocatingWithReGeocode(withReGeocode: boolean): void;
+export {};

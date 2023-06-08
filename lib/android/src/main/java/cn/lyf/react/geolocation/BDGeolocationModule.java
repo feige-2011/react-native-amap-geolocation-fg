@@ -1,4 +1,4 @@
-package cn.qiuxiang.react.geolocation;
+package cn.lyf.react.geolocation;
 
 import android.Manifest;
 import android.location.Location;
@@ -16,10 +16,12 @@ import com.baidu.mapapi.SDKInitializer;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
+import cn.qiuxiang.react.geolocation.PermissionUtils;
+
 @SuppressWarnings("unused")
 public class BDGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
-    protected static final String TAG = AMapGeolocationModule.class.getSimpleName();
+    protected static final String TAG = BDGeolocationModule.class.getSimpleName();
     protected static final String WillStartLocatingUser = "WillStartLocatingUser";
     protected static final String DidStopLocatingUser = "DidStopLocatingUser";
 

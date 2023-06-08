@@ -1,4 +1,4 @@
-package cn.qiuxiang.react.geolocation;
+package cn.lyf.react.geolocation;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
