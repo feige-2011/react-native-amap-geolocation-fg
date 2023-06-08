@@ -1,5 +1,7 @@
 package cn.qiuxiang.react.geolocation;
 
+import android.Manifest;
+
 import androidx.annotation.NonNull;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -35,9 +37,42 @@ public class AMapGeolocationModule extends ReactContextBaseJavaModule implements
 
     @ReactMethod
     public void init(String key, Promise promise) throws Exception {
-        if (client != null) {
-            client.onDestroy();
-        }
+
+        /**
+         * 申请文件读写、相机、位置权限
+         */
+        PermissionUtils.requestPermissions(getCurrentActivity(), 0x11, new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, new PermissionUtils.OnPermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+//                if (mLocationClient == null) {
+//                    mLocationClient = new LocationClient(mReactContext.getBaseContext());     //声明LocationClient类
+//                    mLocationClient.registerLocationListener(new BDLocationListener() {
+//                        @Override
+//                        public void onReceiveLocation(BDLocation location) {
+//                            Log.v(TAG, "onReceiveLocation");
+//                            if (location.getLocType() == BDLocation.TypeGpsLocation || location.getLocType() == BDLocation.TypeNetWorkLocation || location.getLocType() == BDLocation.TypeOffLineLocation) {// 定位成功
+//                                Log.v(TAG, "get location " + location.getCity());
+//                                sendSuccessEvent(location);
+//                            } else {
+//                                Log.v(TAG, "get failed ");
+//                                sendFailureEvent(location);
+//                            }
+//                        }
+//                    });
+//                }
+//
+//                setLocationOption(null);
+//                mLocationClient.start();
+            }
+
+            @Override
+            public void onPermissionDenied(String[] deniedPermissions) {
+
+            }
+        });
+
 
         AMapLocationClient.setApiKey(key);
         AMapLocationClient.updatePrivacyShow(reactContext, true, true);
