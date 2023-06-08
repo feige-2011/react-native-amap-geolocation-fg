@@ -11,5 +11,7 @@ android {
 
 dependencies {
     compileOnly 'com.facebook.react:react-native:+'
-    implementation files('libs/BaiduLBS_Android.jar')
+    compileOnly 'com.baidu.lbsyun:BaiduMapSDK_Location:9.1.8'
+    compileOnly 'com.baidu.lbsyun:BaiduMapSDK_Map:7.4.0'
+    compileOnly 'com.baidu.lbsyun:BaiduMapSDK_Util:7.4.0'
 }
