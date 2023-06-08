@@ -6,7 +6,7 @@ module.exports = {
       platforms: {
         android: {
           sourceDir: __dirname + "/lib/android",
-          packageImportPath: "import cn.qiuxiang.react.geolocation.AMapGeolocationPackage;",
+          packageImportPath: "import cn.lyf.react.geolocation.AMapGeolocationPackage;",
           packageInstance: "new AMapGeolocationPackage()",
         },
       },

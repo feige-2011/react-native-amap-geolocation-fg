@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.qiuxiang.react.geolocation">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="cn.lyf.react.geolocation">
     <!-- 这个权限用于进行网络定位-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
     <!-- 这个权限用于访问系统接口提供的卫星定位信息-->
