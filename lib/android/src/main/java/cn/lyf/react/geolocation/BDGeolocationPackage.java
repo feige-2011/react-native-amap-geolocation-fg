@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-public class AMapGeolocationPackage implements ReactPackage {
+public class BDGeolocationPackage implements ReactPackage {
     @NotNull
     @Override
     public List createViewManagers(@NotNull ReactApplicationContext reactContext) {
@@ -19,7 +19,7 @@ public class AMapGeolocationPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(@NotNull ReactApplicationContext reactContext) {
 
         List<NativeModule> modules = new ArrayList<>();
-        modules.add(new AMapGeolocationModule(reactContext));
+        modules.add(new BDGeolocationModule(reactContext));
 
         return  modules;
     }

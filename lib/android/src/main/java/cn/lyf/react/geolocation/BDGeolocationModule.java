@@ -17,7 +17,7 @@ import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 @SuppressWarnings("unused")
-public class AMapGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class BDGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
     protected static final String TAG = AMapGeolocationModule.class.getSimpleName();
     protected static final String WillStartLocatingUser = "WillStartLocatingUser";
@@ -31,7 +31,7 @@ public class AMapGeolocationModule extends ReactContextBaseJavaModule implements
     private LocationClientOption option = null;
     private LocationClient mLocationClient = null;
 
-    AMapGeolocationModule(ReactApplicationContext reactContext) {
+    BDGeolocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         mReactContext = reactContext;
         mReactContext.addLifecycleEventListener(this);
@@ -40,7 +40,7 @@ public class AMapGeolocationModule extends ReactContextBaseJavaModule implements
     @NonNull
     @Override
     public String getName() {
-        return "AMapGeolocation";
+        return "BDGeolocation";
     }
 
     @ReactMethod
