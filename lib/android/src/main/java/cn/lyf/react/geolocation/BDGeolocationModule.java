@@ -1,43 +1,45 @@
 package cn.lyf.react.geolocation;
 
-import android.Manifest;
-import android.location.Location;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.location.BDAbstractLocationListener;
+import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.common.BaiduMapSDKException;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-
-import cn.lyf.react.geolocation.PermissionUtils;
 
 @SuppressWarnings("unused")
 public class BDGeolocationModule extends ReactContextBaseJavaModule {
 
     protected static final String TAG = BDGeolocationModule.class.getSimpleName();
-    protected static final String WillStartLocatingUser = "WillStartLocatingUser";
-    protected static final String DidStopLocatingUser = "DidStopLocatingUser";
 
-    protected static final String DidUpdateUserHeading = "DidUpdateUserHeading";
-    protected static final String DidUpdateBMKUserLocation = "DidUpdateBMKUserLocation";
-    protected static final String DidFailToLocateUserWithError = "DidFailToLocateUserWithError";
-
-
+    private DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter;
     private static LocationClient mLocationClient = null;
-    private static LocationClientOption option;
+    private static LocationClientOption mOption;
     private static LocationClientOption  DIYoption;
     private ReactApplicationContext mReactContext;
-
+    private Object objLock;
+    private BDAbstractLocationListener mListener;
     BDGeolocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         mReactContext = reactContext;
+
+        SDKInitializer.setAgreePrivacy(reactContext.getApplicationContext(), true);
+        try {
+            SDKInitializer.initialize(reactContext.getApplicationContext());
+        } catch (BaiduMapSDKException e) {
+            e.printStackTrace();
+        }
+        SDKInitializer.setCoordType(CoordType.GCJ02);
+        LocationClient.setAgreePrivacy(true);
     }
 
     @NonNull
@@ -46,6 +48,8 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
         return "BDGeolocation";
     }
 
+
+
     @ReactMethod
     public void init(String key, Promise promise) throws Exception {
 
@@ -53,61 +57,69 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
          * 申请文件读写、相机、位置权限
          */
         SDKInitializer.setApiKey(key);
-        SDKInitializer.initialize(getReactApplicationContext().getApplicationContext());
-        PermissionUtils.requestPermissions(getCurrentActivity(), 0x11, new String[]{
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION}, new PermissionUtils.OnPermissionListener() {
+         Handler mHandler=new Handler();
+        Runnable runnable = new Runnable() {
             @Override
-            public void onPermissionGranted() throws Exception {
+            public void run() {
+                //setAgreePrivacy接口需要在LocationClient实例化之前调用
                 if (mLocationClient == null) {
                     try {
-//                        mLocationClient = new LocationClient(
-//                                getReactApplicationContext());
+                        mLocationClient = new LocationClient(
+                                getReactApplicationContext());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                      //声明LocationClient类
+                    //声明LocationClient类
                 }
                 if (mLocationClient != null){
-                    mLocationClient.registerLocationListener(new BDAbstractLocationListener() {
-                        @Override
-                        public void onReceiveLocation(BDLocation bdLocation) {
-                            if (bdLocation.getLocType() == bdLocation.TypeGpsLocation || bdLocation.getLocType() == bdLocation.TypeNetWorkLocation || bdLocation.getLocType() == bdLocation.TypeOffLineLocation) {// 定位成功
-                                sendSuccessEvent(bdLocation);
-                            } else {
-                                sendFailureEvent(bdLocation);
-                            }
-                        }
-                    });
-                    setLocationOption(null);
-                }
-            }
-            @Override
-            public void onPermissionDenied(String[] deniedPermissions) {
 
+                    addLocationOption(getDefaultLocationClientOption());
+                    eventEmitter = mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
+                }
+                mListener = new BDAbstractLocationListener() {
+                    /**
+                     * 定位请求回调函数
+                     *
+                     */
+                    @Override
+                    public void onReceiveLocation(BDLocation bdLocation) {
+                        if (bdLocation.getLocType() == BDLocation.TypeGpsLocation || bdLocation.getLocType() == BDLocation.TypeNetWorkLocation || bdLocation.getLocType() == BDLocation.TypeOffLineLocation) {// 定位成功
+                            sendSuccessEvent(bdLocation);
+                        } else {
+                            WritableMap map = Arguments.createMap();
+                            map.putInt("code", BDLocation.TypeServerError);
+                            eventEmitter.emit("BDGeolocation", map);
+                        }
+                    }
+                };
+                registerListener(mListener);
             }
-        });
+        };
+        mHandler.post(runnable);
+        promise.resolve(null);
+    }
+
+
+
+
+    public boolean registerListener(BDAbstractLocationListener listener) {
+        boolean isSuccess = false;
+        if ((mLocationClient != null) && (listener != null)) {
+            mLocationClient.registerLocationListener(listener);
+            isSuccess = true;
+        }
+        return isSuccess;
+    }
+    public void unregisterListener(BDAbstractLocationListener listener) {
+        if ((mLocationClient != null) && (listener != null)) {
+            mLocationClient.unRegisterLocationListener(listener);
+        }
     }
 
     protected void sendSuccessEvent(BDLocation location) {
-        WritableMap map = Arguments.createMap();
-        map.putDouble("latitude", location.getLatitude());
-        map.putDouble("longitude", location.getLongitude());
-        map.putString("address", location.getAddrStr());
-        map.putString("province", location.getProvince());
-        map.putString("city", location.getCity());
-        map.putString("district", location.getDistrict());
-        map.putString("streetName", location.getStreet());
-        map.putString("streetNumber", location.getStreetNumber());
-        if (location.getLocType() == BDLocation.TypeGpsLocation) {// GPS定位结果
-            map.putString("describe", "gps定位成功");
-        } else if (location.getLocType() == BDLocation.TypeNetWorkLocation) {// 网络定位结果
-            map.putString("describe", "网络定位成功");
-        } else if (location.getLocType() == BDLocation.TypeOffLineLocation) {// 离线定位结果
-            map.putString("describe", "离线定位成功");
+        if (location != null) {
+            eventEmitter.emit("BDGeolocation", toJSON(location));
         }
-        map.putString("locationDescribe", location.getLocationDescribe());
-        sendEvent(DidUpdateBMKUserLocation, map);
     }
 
     protected void sendFailureEvent(BDLocation location) {
@@ -123,56 +135,74 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
             map.putString("message", "定位失败");
         }
         map.putString("locationDescribe", location.getLocationDescribe());
-        sendEvent(DidFailToLocateUserWithError, map);
+//        sendEvent(DidFailToLocateUserWithError, map);
     }
 
-    protected void sendDidStopEvent() {
-        WritableMap map = Arguments.createMap();
-        map.putString("message", "停止定位");
-        sendEvent(DidStopLocatingUser, map);
-    }
+//    protected void sendDidStopEvent() {
+//        WritableMap map = Arguments.createMap();
+//        map.putString("message", "停止定位");
+//        sendEvent(DidStopLocatingUser, map);
+//    }
 
-    private void sendEvent(String eventName, @Nullable WritableMap params) {
-        //此处需要添加hasActiveCatalystInstance，否则可能造成崩溃
-        //问题解决参考: https://github.com/walmartreact/react-native-orientation-listener/issues/8
-        if (mReactContext.hasActiveCatalystInstance()) {
-            Log.i(TAG, "hasActiveCatalystInstance");
-            mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit(eventName, params);
-        } else {
-            Log.i(TAG, "not hasActiveCatalystInstance");
+//    private void sendEvent(String eventName, @Nullable WritableMap params) {
+//        //此处需要添加hasActiveCatalystInstance，否则可能造成崩溃
+//        //问题解决参考: https://github.com/walmartreact/react-native-orientation-listener/issues/8
+//        if (mReactContext.hasActiveCatalystInstance()) {
+//            mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+//                    .emit(eventName, params);
+//        } else {
+//        }
+//    }
+
+    public LocationClientOption getDefaultLocationClientOption() {
+        if (mOption == null) {
+            mOption = new LocationClientOption();
+            mOption.setCoorType( "gcj02" ); // 可选，默认gcj02，设置返回的定位结果坐标系，如果配合百度地图使用，建议设置为bd09ll;
+            mOption.setScanSpan(500); // 可选，默认0，即仅定位一次，设置发起连续定位请求的间隔需要大于等于1000ms才是有效的
+            mOption.setIsNeedAddress(true); // 可选，设置是否需要地址信息，默认不需要
+            mOption.setIsNeedLocationDescribe(true); // 可选，设置是否需要地址描述
+            mOption.setNeedDeviceDirect(false); // 可选，设置是否需要设备方向结果
+            mOption.setLocationNotify(false); // 可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
+            mOption.setIgnoreKillProcess(true); // 可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop
+            mOption.setIsNeedLocationDescribe(true); // 可选，默认false，设置是否需要位置语义化结果，可以在BDLocation
+            mOption.setIsNeedLocationPoiList(true); // 可选，默认false，设置是否需要POI结果，可以在BDLocation
+            mOption.SetIgnoreCacheException(false); // 可选，默认false，设置是否收集CRASH信息，默认收集
+            mOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy); // 可选，默认高精度，设置定位模式，高精度，低功耗，仅设备，模糊
+            mOption.setIsNeedAltitude(false); // 可选，默认false，设置定位时是否需要海拔信息，默认不需要，除基础定位版本都可用
+            // 可选，设置首次定位时选择定位速度优先还是定位准确性优先，默认为速度优先
+            mOption.setFirstLocType(LocationClientOption.FirstLocType.SPEED_IN_FIRST_LOC);
+        }
+        return mOption;
+    }
+    @ReactMethod
+    public void addLocationOption(LocationClientOption option) {
+
+        boolean isSuccess = false;
+        if ((mLocationClient != null) && (option != null)) {
+            if (mLocationClient.isStarted()) {
+                mLocationClient.stop();
+            }
+            DIYoption = option;
+            mLocationClient.setLocOption(option);
         }
     }
 
 
     @ReactMethod
-    public void setLocationOption(ReadableMap optionMap) {
-        LocationClientOption option = new LocationClientOption();
-        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy
-        );//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
-        int span = 1000;
-        option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
-        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
-        option.setOpenGps(true);//可选，默认false,设置是否使用gps
-        option.setLocationNotify(false);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
-        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
-        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
-        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
-        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
-        mLocationClient.setLocOption(option);
-    }
-
-
-    @ReactMethod
     public void start() {
-        mLocationClient.start();
+            if (mLocationClient != null && !mLocationClient.isStarted()) {
+                registerListener(mListener);
+                mLocationClient.start();
+            }
     }
 
     @ReactMethod
     public void stop() {
-        mLocationClient.stop();
-        sendDidStopEvent();
+            if (mLocationClient != null && mLocationClient.isStarted()) {
+                unregisterListener(mListener);
+                mLocationClient.stop();
+            }
+//        sendDidStopEvent();
     }
 
     @ReactMethod
@@ -185,43 +215,59 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
     public void isStarted(Promise promise) {
         promise.resolve(mLocationClient.isStarted());
     }
-
-
-
-
-
     private ReadableMap toJSON(BDLocation location) {
-        if (location == null) {
-            return null;
+
+//        result.speed = location.speed;
+//        result.province = location.province;
+//        result.streetNumber = location.streetNumber;
+//        result.street = location.street;
+//        result.cityCode = location.cityCode;
+//        result.address = location.address;
+//        result.city = location.city;
+//        result.poiName = location.poiName;
+//        result.country = location.country;
+//        result.direction = location.direction;
+//        result.district = location.district;
+//        result.longitude = location.longitude;
+//        result.latitude = location.latitude;
+//        result.timestamp = location.timestamp;
+//        result.direction = location.direction;
+//        result.accuracy = location.accuracy;
+
+        String city = location.getCity();
+        String locationDescribe = location.getLocationDescribe();
+        String street = location.getStreet();
+        StringBuilder sb = new StringBuilder();
+        String my_adress = sb.append(city).append(locationDescribe).toString();
+        if (locationDescribe == null|| ""==locationDescribe){
+            sb.append(city).append(street).toString();
         }
         WritableMap map = Arguments.createMap();
-//        map.putString("locationDetail", location.getLocationDetail());
-//        if (location.getErrorCode() == AMapLocation.LOCATION_SUCCESS) {
-//            map.putDouble("timestamp", location.getTime());
-//            map.putDouble("accuracy", location.getAccuracy());
-//            map.putDouble("latitude", location.getLatitude());
-//            map.putDouble("longitude", location.getLongitude());
-//            map.putDouble("altitude", location.getAltitude());
-//            map.putDouble("speed", location.getSpeed());
-//            map.putDouble("heading", location.getBearing());
-//            map.putInt("locationType", location.getLocationType());
-//            map.putString("coordinateType", location.getCoordType());
-//            map.putInt("gpsAccuracy", location.getGpsAccuracyStatus());
-//            map.putInt("trustedLevel", location.getTrustedLevel());
-//            if (!location.getAddress().isEmpty()) {
-//                map.putString("address", location.getAddress());
-//                map.putString("description", location.getDescription());
-//                map.putString("poiName", location.getPoiName());
-//                map.putString("country", location.getCountry());
-//                map.putString("province", location.getProvince());
-//                map.putString("city", location.getCity());
-//                map.putString("cityCode", location.getCityCode());
-//                map.putString("district", location.getDistrict());
-//                map.putString("street", location.getStreet());
-//                map.putString("streetNumber", location.getStreetNum());
-//                map.putString("adCode", location.getAdCode());
-//            }
-//        }
+        map.putDouble("latitude", location.getLatitude());
+        map.putDouble("longitude", location.getLongitude());
+        map.putString("address", location.getAddrStr());
+        map.putString("province", location.getProvince());
+        map.putString("city", location.getCity());
+        map.putString("district", location.getDistrict());
+        map.putString("streetName", location.getStreet());
+        map.putString("streetNumber", location.getStreetNumber());
+        map.putString("country", location.getCountry());
+
+        map.putString("address", my_adress);
+        map.putString("my_address", my_adress);
+        map.putString("poiName", location.getLocationDescribe());
+        map.putString("cityCode", location.getCityCode());
+        map.putString("district", location.getDistrict());
+        map.putString("street", location.getStreet());
+        map.putString("adCode", location.getAdCode());
+        if (location.getLocType() == BDLocation.TypeGpsLocation) {// GPS定位结果
+            map.putString("describe", "gps定位成功");
+        } else if (location.getLocType() == BDLocation.TypeNetWorkLocation) {// 网络定位结果
+            map.putString("describe", "网络定位成功");
+        } else if (location.getLocType() == BDLocation.TypeOffLineLocation) {// 离线定位结果
+            map.putString("describe", "离线定位成功");
+        }
+
         return map;
     }
 
