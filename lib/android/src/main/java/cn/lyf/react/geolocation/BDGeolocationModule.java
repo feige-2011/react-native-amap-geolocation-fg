@@ -16,10 +16,10 @@ import com.baidu.mapapi.SDKInitializer;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import cn.qiuxiang.react.geolocation.PermissionUtils;
+import cn.lyf.react.geolocation.PermissionUtils;
 
 @SuppressWarnings("unused")
-public class BDGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class BDGeolocationModule extends ReactContextBaseJavaModule {
 
     protected static final String TAG = BDGeolocationModule.class.getSimpleName();
     protected static final String WillStartLocatingUser = "WillStartLocatingUser";
@@ -29,14 +29,15 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule implements L
     protected static final String DidUpdateBMKUserLocation = "DidUpdateBMKUserLocation";
     protected static final String DidFailToLocateUserWithError = "DidFailToLocateUserWithError";
 
+
+    private static LocationClient mLocationClient = null;
+    private static LocationClientOption option;
+    private static LocationClientOption  DIYoption;
     private ReactApplicationContext mReactContext;
-    private LocationClientOption option = null;
-    private LocationClient mLocationClient = null;
 
     BDGeolocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         mReactContext = reactContext;
-        mReactContext.addLifecycleEventListener(this);
     }
 
     @NonNull
@@ -57,22 +58,29 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule implements L
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION}, new PermissionUtils.OnPermissionListener() {
             @Override
-            public void onPermissionGranted() {
+            public void onPermissionGranted() throws Exception {
                 if (mLocationClient == null) {
-                    mLocationClient = new LocationClient(
-                            mReactContext.getBaseContext());     //声明LocationClient类
-                    mLocationClient.registerLocationListener(new BDLocationListener() {
+                    try {
+//                        mLocationClient = new LocationClient(
+//                                getReactApplicationContext());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                      //声明LocationClient类
+                }
+                if (mLocationClient != null){
+                    mLocationClient.registerLocationListener(new BDAbstractLocationListener() {
                         @Override
-                        public void onReceiveLocation(BDLocation location) {
-                            if (location.getLocType() == BDLocation.TypeGpsLocation || location.getLocType() == BDLocation.TypeNetWorkLocation || location.getLocType() == BDLocation.TypeOffLineLocation) {// 定位成功
-                                sendSuccessEvent(location);
+                        public void onReceiveLocation(BDLocation bdLocation) {
+                            if (bdLocation.getLocType() == bdLocation.TypeGpsLocation || bdLocation.getLocType() == bdLocation.TypeNetWorkLocation || bdLocation.getLocType() == bdLocation.TypeOffLineLocation) {// 定位成功
+                                sendSuccessEvent(bdLocation);
                             } else {
-                                sendFailureEvent(location);
+                                sendFailureEvent(bdLocation);
                             }
                         }
                     });
+                    setLocationOption(null);
                 }
-                setLocationOption(null);
             }
             @Override
             public void onPermissionDenied(String[] deniedPermissions) {
@@ -171,9 +179,7 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule implements L
     public void addListener(String name) {
     }
 
-    @ReactMethod
-    public void removeListeners(Integer count) {
-    }
+
 
     @ReactMethod
     public void isStarted(Promise promise) {
@@ -219,18 +225,5 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule implements L
         return map;
     }
 
-    @Override
-    public void onHostResume() {
 
-    }
-
-    @Override
-    public void onHostPause() {
-
-    }
-
-    @Override
-    public void onHostDestroy() {
-
-    }
 }

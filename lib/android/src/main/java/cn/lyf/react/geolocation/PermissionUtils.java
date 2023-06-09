@@ -1,4 +1,4 @@
-package cn.qiuxiang.react.geolocation;
+package cn.lyf.react.geolocation;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -20,7 +20,7 @@ public final class PermissionUtils {
 
     public interface OnPermissionListener {
 
-        void onPermissionGranted();
+        void onPermissionGranted() throws Exception;
 
         void onPermissionDenied(String[] deniedPermissions);
     }
@@ -47,13 +47,13 @@ public final class PermissionUtils {
 
     @TargetApi(Build.VERSION_CODES.M)
     public static void requestPermissions(Context context, int requestCode
-            , String[] permissions, OnPermissionListener listener) {
+            , String[] permissions, OnPermissionListener listener) throws Exception {
         requestPermissions(context, requestCode, permissions, listener, null);
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     public static void requestPermissions(Context context, int requestCode
-            , String[] permissions, OnPermissionListener listener, RationaleHandler handler) {
+            , String[] permissions, OnPermissionListener listener, RationaleHandler handler) throws Exception {
         if (context instanceof Activity) {
             mRequestCode = requestCode;
             mOnPermissionListener = listener;
@@ -78,7 +78,7 @@ public final class PermissionUtils {
      * 请求权限结果，对应Activity中onRequestPermissionsResult()方法。
      */
     public static void onRequestPermissionsResult(Activity context, int requestCode, String[] permissions, int[]
-            grantResults) {
+            grantResults) throws Exception {
         if (mRequestCode != -1 && requestCode == mRequestCode) {
             if (mOnPermissionListener != null) {
                 String[] deniedPermissions = getDeniedPermissions(context, permissions);
@@ -129,49 +129,5 @@ public final class PermissionUtils {
         return false;
     }
 
-    /**
-     * 检查权限，未授权则发起申请
-     * @param activity
-     * @param requiredPermissions
-     * @param listener
-     */
-
-    public static void permissionsCheck(final Activity activity, String[] requiredPermissions,final OnPermissionListener listener) {
-        final String[] missingPermissions = getDeniedPermissions(activity, requiredPermissions);
-        if (missingPermissions.length > 0) {
-            ((PermissionAwareActivity) activity).requestPermissions(missingPermissions, 1, new PermissionListener() {
-                @Override
-                public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-                    if (requestCode == 1) {
-
-                        for (int grantResult : grantResults) {
-                            if (grantResult == PackageManager.PERMISSION_DENIED) {
-                                if (listener != null) {
-                                    listener.onPermissionDenied(missingPermissions);
-
-                                }
-                                return true;
-                            }
-                        }
-
-                        if (listener != null) {
-                            listener.onPermissionGranted();
-                        }
-
-                    }
-
-                    return true;
-                }
-            });
-
-            return;
-        }
-
-        // all permissions granted
-        if (listener != null) {
-            listener.onPermissionGranted();
-        }
-
-    }
 
 }
