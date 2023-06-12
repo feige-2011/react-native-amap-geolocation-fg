@@ -7,7 +7,7 @@
     "location",
     "geolocation"
   ],
-  "version": "1.2.4",
+  "version": "1.2.5",
   "author": "7c00 <i@7c00.cc>",
   "repository": {
     "type": "git",
@@ -17,7 +17,6 @@
   "files": [
     "src",
     "react-native.config.js",
-    "react-native-amap-geolocation-fg.podspec",
     "lib/js",
     "lib/ios",
     "lib/android/src",
