@@ -3,6 +3,12 @@ package cn.lyf.react.geolocation;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 
@@ -242,6 +248,12 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
         if (locationDescribe == null|| ""==locationDescribe){
             sb.append(city).append(street).toString();
         }
+        String time = location.getTime();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        ParsePosition pos = new ParsePosition(0);
+        Date date = simpleDateFormat.parse(time,pos);
+        int ts =  Integer.valueOf(String.valueOf(date.getTime())) ;
+
         WritableMap map = Arguments.createMap();
         map.putDouble("latitude", location.getLatitude());
         map.putDouble("longitude", location.getLongitude());
@@ -252,7 +264,7 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
         map.putString("streetName", location.getStreet());
         map.putString("streetNumber", location.getStreetNumber());
         map.putString("country", location.getCountry());
-
+        map.putInt("timestamp", ts);
         map.putString("address", my_adress);
         map.putString("my_address", my_adress);
         map.putString("poiName", location.getLocationDescribe());
@@ -270,6 +282,7 @@ public class BDGeolocationModule extends ReactContextBaseJavaModule {
 
         return map;
     }
+
 
 
 }
