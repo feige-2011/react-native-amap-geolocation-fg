@@ -4,13 +4,13 @@
 #import "RCTUserLocation.h"
 // 引入base相关所有的头文件
 #import <BaiduMapAPI_Base/BMKBaseComponent.h>
-@interface RCTLocationModule : RCTEventEmitter <RCTBridgeModule, BMKLocationManagerDelegate,BMKLocationAuthDelegate>
+@interface BDGeolocationModule : RCTEventEmitter <RCTBridgeModule, BMKLocationManagerDelegate,BMKLocationAuthDelegate>
 @property (nonatomic, strong) BMKLocationManager*locationManager;
 @property (nonatomic, strong) RCTUserLocation *location;
 @property (nonatomic, assign) BOOL initialized;
 @end
 
-@implementation RCTLocationModule {
+@implementation BDGeolocationModule {
     
 }
 
