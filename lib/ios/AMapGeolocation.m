@@ -103,7 +103,7 @@ RCT_EXPORT_METHOD(stop) {
 
 //sdk重写前
 - (void)didUpdateBMKUserLocation:(BMKLocation *)location {
-    [self sendEventWithName:@"baiduMapLocation" body: [self json:location]];
+    [self sendEventWithName:@"BDGeolocation" body: [self json:location]];
 }
 
 - (id)json:(BMKLocation *)bmk_location{
